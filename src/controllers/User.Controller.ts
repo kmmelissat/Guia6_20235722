@@ -1,7 +1,39 @@
 import { Request, Response } from "express";
 import User from "../models/Users";
-import { hashPassword } from "../utils/auth";
+import { hashPassword, validatePassword } from "../utils/auth";
 import { validationResult } from "express-validator";
+
+export const login = async (req: Request, res: Response) => {
+    let errors = validationResult(req);
+    
+    if (!errors.isEmpty()) {
+        return res.status(400).json({
+            errors: errors.array(),
+        });
+    }
+
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        const error = new Error('invalid credentials');
+        return res.status(401).json({
+            error: error.message,
+        });
+    }
+
+    const isPasswordValid = await validatePassword (password, user.password);
+    
+    if (!isPasswordValid) {
+        const error = new Error("invalid credentials");
+        return res.status(401).json({
+            error: error.message,
+        });
+    }
+
+    res.status(200).json('authenticated');
+}
+
 
 export const createAccount = async (req: Request, res: Response) => {
 
@@ -32,3 +64,4 @@ export const createAccount = async (req: Request, res: Response) => {
     await user.save();
     res.status(201).json({message:'Datos del usuario registrados con exito'});
     }  ;  //crea un usuario en la base de datos
+

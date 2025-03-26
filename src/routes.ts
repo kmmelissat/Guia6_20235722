@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { createAccount } from "./controllers/User.Controller";
+import { createAccount, login } from "./controllers/User.Controller";
 import { body } from "express-validator";
 
 const router = Router();
@@ -17,6 +17,18 @@ router.post("/auth/register", [
     async (req: Request, res: Response) => {
     createAccount(req, res);
     });
+
+
+    router.post('/auth/login',
+      [
+          body('email').isEmail().withMessage('Invalid email'),
+          body('password').isString().notEmpty().withMessage('Password must be at least 8 characters long'),
+      ],
+      async (req: Request, res: Response) => {
+          login(req, res);
+      }
+  )
+  
 
 export default router;
 
